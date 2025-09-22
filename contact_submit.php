@@ -1,0 +1,6 @@
+<?php require __DIR__.'/config.php'; require __DIR__.'/db.php'; if(session_status()!==PHP_SESSION_ACTIVE) session_start(); if(!csrf_check($_POST['csrf']??'')) die('Invalid request'); if(!empty($_POST['company'])) die('Spam detected'); $name=trim($_POST['name']??''); $email=trim($_POST['email']??''); $phone=trim($_POST['phone']??''); $subject=trim($_POST['subject']??''); $message=trim($_POST['message']??''); if(!filter_var($email,FILTER_VALIDATE_EMAIL)) die('Invalid email'); if(!preg_match('/^[0-9+\-\s]{8,15}$/',$phone)) die('Invalid phone'); $db=db(); $stmt=$db->prepare("INSERT INTO messages(name,email,phone,subject,message) VALUES (?,?,?,?,?)"); $stmt->execute([$name,$email,$phone,$subject,$message]); $body="New message from $name <$email>
+Phone: $phone
+Subject: $subject
+
+$message"; if(!empty($ADMIN_EMAIL)) @mail($ADMIN_EMAIL, "Website contact: $subject", $body, "From: no-reply@".$_SERVER['HTTP_HOST']); ?>
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><title>Thanks</title></head><body class='container py-5'><h1>Thanks!</h1><p>Your message has been received. We usually reply within a few hours.</p><a class='btn btn-brand' href='index.php'>Back to Home</a></body></html>
